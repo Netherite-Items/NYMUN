@@ -2180,3 +2180,114 @@ ul {
     grid-template-columns: 1fr;
   }
 }
+
+/* ============ 四列卡片轨道（桌面四列 / 手机横滑） ============ */
+.card-track--4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 900px) {
+  .card-track--4 > .card {
+    flex: 0 0 72%;
+    max-width: 300px;
+  }
+}
+
+/* ============ 主内容 + 侧栏（手机单列） ============ */
+.split-layout {
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 28px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .split-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+/* ============ FAQ 双列（手机单列） ============ */
+.faq-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+@media (max-width: 900px) {
+  .faq-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .faq-grid .card {
+    padding: 20px 22px !important;
+  }
+
+  .faq-grid summary {
+    font-size: 15px;
+  }
+}
+
+/* ============ 通用响应式网格（手机端统一降列 / 横滑） ============ */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 22px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.grid-aside {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 34px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .grid-2,
+  .grid-3,
+  .grid-aside {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .grid-2 .card,
+  .grid-3 .card {
+    padding: 22px 24px;
+  }
+}
+
+/* 三列卡片在手机上改为横滑，避免三张卡纵向堆成一长条 */
+@media (max-width: 900px) {
+  .grid-scroll-3 {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    margin-inline: -22px;
+    padding: 4px 22px 12px;
+    scrollbar-width: none;
+  }
+
+  .grid-scroll-3::-webkit-scrollbar {
+    display: none;
+  }
+
+  .grid-scroll-3 > * {
+    flex: 0 0 74%;
+    max-width: 300px;
+    scroll-snap-align: center;
+  }
+
+  .grid-scroll-3 > *:last-child {
+    margin-right: 22px;
+  }
+}
