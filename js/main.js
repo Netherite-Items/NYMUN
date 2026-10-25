@@ -25,7 +25,7 @@
    * 访问统计：部署 Cloudflare Worker 后把地址填在这里
    * 留空则不统计，网站照常运行。
    * ------------------------------------------------------------ */
-  const STATS_ENDPOINT = 'YOUR_STATS_WORKER_URL'; // 例：https://nymun-stats.xxx.workers.dev
+  const STATS_ENDPOINT = 'https://nymun-stats.husiyuan0705.workers.dev';
 
   const header = document.querySelector('.site-header');
   const toggle = document.querySelector('.nav-toggle');
