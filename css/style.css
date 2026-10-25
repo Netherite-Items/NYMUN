@@ -451,6 +451,11 @@ ul {
     grid-template-columns: 1fr;
     gap: 40px;
   }
+
+  /* 单列时卡片会压住社徽，直接隐藏 */
+  .float-card {
+    display: none;
+  }
 }
 
 .hero-kicker {
@@ -596,6 +601,22 @@ ul {
     0 24px 60px rgba(2, 8, 20, 0.55);
 }
 
+/* 首页主视觉：完整社徽（含 MUN 横幅），不做圆形裁切 */
+.hero-emblem {
+  position: relative;
+  z-index: 2;
+  width: min(58%, 300px);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 26px 54px rgba(2, 8, 20, 0.72));
+}
+
+@media (max-width: 920px) {
+  .hero-emblem {
+    width: min(62%, 260px);
+  }
+}
+
 .emblem small {
   position: absolute;
   bottom: 16%;
@@ -633,22 +654,18 @@ ul {
 }
 
 .float-card:nth-of-type(1) {
-  top: 8%;
-  left: 0;
+  top: 2%;
+  left: -4%;
   animation: float 6s var(--ease) infinite;
 }
 
 .float-card:nth-of-type(2) {
-  top: 46%;
-  right: -6%;
+  bottom: 2%;
+  right: -4%;
   animation: float 5.2s var(--ease) infinite 1.2s;
 }
 
-.float-card:nth-of-type(3) {
-  bottom: 4%;
-  left: 12%;
-  animation: float 5.6s var(--ease) infinite 2.4s;
-}
+/* 第三张卡片（MPC）已移除：原位置压住社徽底部横幅 */
 
 @keyframes float {
   0%, 100% {
@@ -1675,7 +1692,7 @@ ul {
 .brand-emblem img {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  object-fit: contain;
   display: block;
 }
 
@@ -1689,15 +1706,14 @@ ul {
 .emblem-figure__img {
   display: grid;
   place-items: center;
-  padding: 18px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 50% 35%, rgba(91, 147, 246, 0.22), transparent 70%);
+  padding: 22px;
+  border-radius: 20px;
+  background: radial-gradient(ellipse at 50% 30%, rgba(91, 147, 246, 0.22), transparent 72%);
   border: 1px solid var(--line-2);
 }
 
 .emblem-figure__img img {
   width: 100%;
-  border-radius: 50%;
   filter: drop-shadow(0 14px 30px rgba(2, 8, 20, 0.6));
 }
 
@@ -2046,4 +2062,121 @@ ul {
   background: rgba(140, 176, 230, 0.08);
   border: 1px dashed var(--line-2);
   vertical-align: middle;
+}
+
+/* ============ 卡片横向滑动轨道（手机端友好） ============ */
+.card-track {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.card-track > .card {
+  display: block;
+}
+
+.track-hint {
+  display: none;
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+}
+
+@media (max-width: 900px) {
+  .card-track {
+    display: flex;
+    gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    /* 抵掉 .wrap 的左右内边距，让卡片滑动到屏幕边缘 */
+    margin-inline: -22px;
+    padding: 4px 22px 12px;
+    scrollbar-width: none;
+  }
+
+  .card-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card-track > .card {
+    flex: 0 0 78%;
+    max-width: 320px;
+    scroll-snap-align: center;
+  }
+
+  .card-track > .card:last-child {
+    margin-right: 22px;
+  }
+
+  .track-hint {
+    display: block;
+  }
+}
+
+@media (max-width: 420px) {
+  .card-track > .card {
+    flex: 0 0 84%;
+  }
+}
+
+/* ============ 你会带走四样东西：手机端两列 ============ */
+.takeaway-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.takeaway-grid .card {
+  padding: 24px;
+}
+
+.takeaway-no {
+  display: block;
+  font-family: "Cormorant Garamond", "Noto Serif SC", serif;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--gold-400);
+}
+
+.takeaway-grid h3 {
+  margin: 10px 0 6px;
+  font-size: 17px;
+}
+
+.takeaway-grid p {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink-2);
+}
+
+@media (max-width: 900px) {
+  .takeaway-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .takeaway-grid .card {
+    padding: 20px 18px;
+  }
+
+  .takeaway-no {
+    font-size: 26px;
+  }
+
+  .takeaway-grid h3 {
+    font-size: 15.5px;
+  }
+
+  .takeaway-grid p {
+    font-size: 13.5px;
+  }
+}
+
+@media (max-width: 380px) {
+  .takeaway-grid {
+    grid-template-columns: 1fr;
+  }
 }
