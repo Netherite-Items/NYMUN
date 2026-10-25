@@ -21,6 +21,12 @@
     EMAILJS.SERVICE_ID !== 'YOUR_SERVICE_ID' &&
     EMAILJS.TEMPLATE_ID !== 'YOUR_TEMPLATE_ID';
 
+  /* ------------------------------------------------------------
+   * 访问统计：部署 Cloudflare Worker 后把地址填在这里
+   * 留空则不统计，网站照常运行。
+   * ------------------------------------------------------------ */
+  const STATS_ENDPOINT = 'YOUR_STATS_WORKER_URL'; // 例：https://nymun-stats.xxx.workers.dev
+
   const header = document.querySelector('.site-header');
   const toggle = document.querySelector('.nav-toggle');
   const navLinks = document.querySelector('.nav-links');
@@ -209,7 +215,7 @@
         submitBtn.textContent = '提交成功 \u2713';
         show('ok', form.dataset.okTitle || '提交成功',
           (form.dataset.okBody || '我们已收到你的提交。') +
-          `<br><span style="opacity:.75">（提示：网站邮件服务尚未配置，内容已保存在本机。你也可以直接发邮件给我们。）</span>`);
+          `<br><span style="opacity:.75">（提示：当前网络可能无法提交，内容已保存在本机，你也可以直接发邮件给我们。）</span>`);
         form.querySelectorAll('input, select, textarea').forEach((f) => (f.disabled = true));
         return;
       }
@@ -279,4 +285,43 @@
       if (e.key === 'Escape') close();
     });
   }
+
+  /* ============================================================
+   * 访问统计上报（PV）
+   * ============================================================ */
+  if (STATS_ENDPOINT && STATS_ENDPOINT !== 'YOUR_STATS_WORKER_URL') {
+    try {
+      const payload = JSON.stringify({ path: location.pathname });
+      const url = STATS_ENDPOINT.replace(/\/+$/, '') + '/track';
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+      } else {
+        fetch(url, { method: 'POST', body: payload, headers: { 'Content-Type': 'application/json' }, keepalive: true });
+      }
+    } catch (_) {
+      /* 统计失败不影响页面 */
+    }
+  }
+
+  /* ============================================================
+   * 隐藏入口：在任意页面连续键入 stats 即可进入统计后台
+   * ============================================================ */
+  (() => {
+    const seq = 'stats';
+    let buf = '';
+    let timer = null;
+    document.addEventListener('keydown', (e) => {
+      const tag = (e.target && e.target.tagName) || '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.metaKey || e.ctrlKey || e.altKey) return;
+      buf += (e.key || '').toLowerCase();
+      if (buf.length > seq.length) buf = buf.slice(-seq.length);
+      clearTimeout(timer);
+      timer = setTimeout(() => { buf = ''; }, 1200);
+      if (buf === seq) {
+        buf = '';
+        const base = location.pathname.replace(/[^\/]*$/, '');
+        location.href = base + 'stats.html';
+      }
+    });
+  })();
 })();
