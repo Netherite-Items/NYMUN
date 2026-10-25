@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>站点统计 · 南洋模联 NYMUN</title>
+<link rel="icon" href="assets/img/favicon.ico" />
+<style>
+  :root {
+    --bg: #050b16;
+    --bg-2: #071022;
+    --card: rgba(16, 28, 48, .62);
+    --line: rgba(91, 147, 246, .18);
+    --line-2: rgba(91, 147, 246, .32);
+    --ink: #eaf1fb;
+    --ink-2: #a9bcd8;
+    --ink-3: #6d83a3;
+    --gold-400: #e3c07a;
+    --blue-400: #6f9ff5;
+    --blue-600: #2f6feb;
+    --ok: #6ee7a8;
+    --err: #eb5454;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Noto Sans SC", -apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    min-height: 100vh;
+    background:
+      radial-gradient(90% 60% at 50% -10%, rgba(47, 111, 235, .18), transparent 60%),
+      radial-gradient(60% 50% at 90% 10%, rgba(227, 192, 122, .08), transparent 60%);
+  }
+  .wrap { width: min(100% - 40px, 900px); margin-inline: auto; }
+
+  header { padding: 44px 0 8px; }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--gold-400);
+  }
+  .kicker::before {
+    content: ''; width: 22px; height: 1px; background: var(--gold-400); opacity: .7;
+  }
+  h1 {
+    margin: 14px 0 6px;
+    font-family: "Noto Serif SC", Georgia, serif;
+    font-size: clamp(26px, 6vw, 38px);
+    letter-spacing: .01em;
+  }
+  .sub { margin: 0; color: var(--ink-2); font-size: 14.5px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    backdrop-filter: blur(10px);
+    padding: 24px;
+  }
+
+  /* 密钥门 */
+  #gate { margin-top: 28px; }
+  #gate label { display: block; font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
+  input[type="text"], input[type="password"] {
+    width: 100%; padding: 13px 14px; font-size: 15px;
+    background: rgba(5, 11, 22, .6);
+    border: 1px solid var(--line-2); border-radius: 12px;
+    color: var(--ink); outline: none; font-family: inherit;
+  }
+  input:focus { border-color: var(--blue-400); }
+  .field { margin-bottom: 14px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 13px 22px; font-size: 15px; font-weight: 600;
+    border-radius: 12px; border: 1px solid transparent; cursor: pointer;
+    background: linear-gradient(135deg, var(--blue-600), #5b93f6);
+    color: #fff; font-family: inherit; width: 100%;
+  }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .hint { margin-top: 12px; font-size: 12.5px; color: var(--ink-3); line-height: 1.7; }
+
+  /* 数据区 */
+  #panel { display: none; margin-top: 26px; }
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 18px;
+  }
+  .stat {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: 16px; padding: 18px; text-align: center;
+  }
+  .stat strong {
+    display: block; font-family: Georgia, serif; font-size: clamp(24px, 7vw, 32px);
+    color: var(--gold-400); line-height: 1.1;
+  }
+  .stat span { display: block; margin-top: 6px; font-size: 12.5px; color: var(--ink-3); }
+
+  .seg { display: flex; gap: 6px; margin-bottom: 14px; }
+  .seg button {
+    flex: 1; padding: 9px 0; font-size: 13.5px; font-family: inherit;
+    background: rgba(5, 11, 22, .5); color: var(--ink-2);
+    border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
+  }
+  .seg button.is-on {
+    background: rgba(47, 111, 235, .2); color: var(--ink); border-color: var(--line-2);
+  }
+
+  .chart-box { padding: 18px 14px 10px; }
+  svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .grid-line { stroke: rgba(91, 147, 246, .12); stroke-width: 1; }
+  .axis-txt { fill: var(--ink-3); font-size: 10px; }
+  .bar-val { fill: var(--ink-2); font-size: 10px; }
+  .dot { fill: var(--gold-400); }
+  #tip {
+    position: fixed; pointer-events: none; z-index: 9;
+    background: rgba(5, 11, 22, .95); border: 1px solid var(--line-2);
+    border-radius: 8px; padding: 6px 10px; font-size: 12.5px; color: var(--ink);
+    display: none; white-space: nowrap;
+  }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 14px; }
+  th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { color: var(--ink-3); font-weight: 500; font-size: 12.5px; }
+  td:last-child, th:last-child { text-align: right; }
+  tbody tr:last-child td { border-bottom: 0; }
+
+  .msg { margin-top: 14px; font-size: 13.5px; min-height: 20px; }
+  .msg.err { color: var(--err); }
+  .msg.ok { color: var(--ok); }
+
+  .logout {
+    margin-top: 18px; width: 100%; padding: 11px; font-size: 13.5px; font-family: inherit;
+    background: transparent; color: var(--ink-3);
+    border: 1px solid var(--line); border-radius: 10px; cursor: pointer;
+  }
+
+  @media (max-width: 560px) {
+    .wrap { width: min(100% - 28px, 900px); }
+    .card { padding: 18px; }
+    .stats-grid { gap: 8px; }
+    .stat { padding: 14px 10px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="kicker">Site Analytics</span>
+    <h1>站点统计</h1>
+    <p class="sub">南洋模联社网站访问量 · 仅社团管理可见</p>
+  </header>
+
+  <!-- 密钥门 -->
+  <section class="card" id="gate">
+    <div class="field">
+      <label for="endpoint">统计接口地址</label>
+      <input type="text" id="endpoint" placeholder="https://nymun-stats.xxx.workers.dev" autocomplete="off" />
+    </div>
+    <div class="field">
+      <label for="token">查看密钥</label>
+      <input type="password" id="token" placeholder="部署时设置的 STATS_TOKEN" />
+    </div>
+    <button class="btn" id="go">进入</button>
+    <p class="hint">两项都会记在这台设备上，下次打开自动进入。<br />此页面不会被搜索引擎收录，也不在网站导航中出现。</p>
+    <div class="msg" id="gateMsg"></div>
+  </section>
+
+  <!-- 数据 -->
+  <section id="panel">
+    <div class="stats-grid">
+      <div class="stat"><strong id="s-today">—</strong><span>今日访问</span></div>
+      <div class="stat"><strong id="s-recent">—</strong><span id="s-recent-label">近 7 日</span></div>
+      <div class="stat"><strong id="s-all">—</strong><span>累计访问</span></div>
+    </div>
+
+    <div class="card">
+      <div class="seg">
+        <button data-days="7" class="is-on">近 7 日</button>
+        <button data-days="14">近 14 日</button>
+        <button data-days="30">近 30 日</button>
+      </div>
+      <div class="chart-box">
+        <svg id="chart" viewBox="0 0 640 220" preserveAspectRatio="none" aria-label="访问量曲线"></svg>
+      </div>
+      <div class="msg" id="chartMsg"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <table>
+        <thead><tr><th>日期</th><th>星期</th><th>访问次数</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <button class="logout" id="logout">清除本机记录并退出</button>
+  </section>
+
+</div>
+<div id="tip"></div>
+
+<script>
+(function () {
+  'use strict';
+  var KEY = 'nymun_stats_cfg';
+  var gate = document.getElementById('gate');
+  var panel = document.getElementById('panel');
+  var gateMsg = document.getElementById('gateMsg');
+  var chartMsg = document.getElementById('chartMsg');
+  var tip = document.getElementById('tip');
+  var chart = document.getElementById('chart');
+  var cfg = null, current = 7, cache = {};
+
+  function loadCfg() {
+    try { return JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) { return null; }
+  }
+  function saveCfg(c) {
+    try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {}
+  }
+
+  function showPanel() {
+    gate.style.display = 'none';
+    panel.style.display = 'block';
+  }
+
+  function fmt(n) { return (n || 0).toLocaleString('en-US'); }
+
+  var WD = ['周日','周一','周二','周三','周四','周五','周六'];
+  function weekday(s) {
+    var p = s.split('-');
+    return WD[new Date(+p[0], +p[1] - 1, +p[2]).getDay()];
+  }
+
+  function api(days) {
+    return fetch(cfg.endpoint.replace(/\/+$/, '') + '/stats?days=' + days + '&token=' + encodeURIComponent(cfg.token))
+      .then(function (r) { return r.json(); });
+  }
+
+  function render(data) {
+    var days = data.days || [];
+    var total = data.total || 0;
+    document.getElementById('s-today').textContent = fmt(days.length ? days[days.length - 1].pv : 0);
+    document.getElementById('s-recent').textContent = fmt(total);
+    document.getElementById('s-recent-label').textContent = '近 ' + days.length + ' 日';
+    document.getElementById('s-all').textContent = fmt(data.allTime || 0);
+    drawChart(days);
+
+    var tb = document.getElementById('tbody');
+    tb.innerHTML = '';
+    days.slice().reverse().forEach(function (d) {
+      var tr = document.createElement('tr');
+      tr.innerHTML = '<td>' + d.date + '</td><td>' + weekday(d.date) + '</td><td>' + fmt(d.pv) + '</td>';
+      tb.appendChild(tr);
+    });
+  }
+
+  function drawChart(days) {
+    var W = 640, H = 220, PL = 34, PR = 10, PT = 18, PB = 26;
+    var iw = W - PL - PR, ih = H - PT - PB;
+    var max = Math.max.apply(null, days.map(function (d) { return d.pv; }));
+    if (max < 5) max = 5;
+    var step = days.length > 1 ? iw / (days.length - 1) : 0;
+    var x = function (i) { return PL + (days.length > 1 ? i * step : iw / 2); };
+    var y = function (v) { return PT + ih - (v / max) * ih; };
+
+    var pts = days.map(function (d, i) { return [x(i), y(d.pv)]; });
+    var line = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
+    var area = line + ' L' + x(days.length - 1).toFixed(1) + ' ' + (PT + ih) + ' L' + x(0).toFixed(1) + ' ' + (PT + ih) + ' Z';
+
+    var grid = '', labels = '';
+    for (var g = 0; g <= 3; g++) {
+      var vy = PT + (ih / 3) * g;
+      grid += '<line class="grid-line" x1="' + PL + '" y1="' + vy + '" x2="' + (W - PR) + '" y2="' + vy + '"/>';
+      labels += '<text class="axis-txt" x="' + (PL - 6) + '" y="' + (vy + 3) + '" text-anchor="end">' + Math.round(max - (max / 3) * g) + '</text>';
+    }
+
+    var xlab = '';
+    var every = Math.ceil(days.length / 6);
+    days.forEach(function (d, i) {
+      if (i % every === 0 || i === days.length - 1) {
+        xlab += '<text class="axis-txt" x="' + x(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle">' + d.date.slice(5) + '</text>';
+      }
+    });
+
+    var dots = pts.map(function (p, i) {
+      return '<circle class="dot" cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="3" data-i="' + i + '"/>';
+    }).join('');
+
+    var hits = days.map(function (d, i) {
+      var hw = days.length > 1 ? step / 2 : iw / 2;
+      return '<rect x="' + (x(i) - hw).toFixed(1) + '" y="' + PT + '" width="' + (hw * 2).toFixed(1) + '" height="' + ih + '" fill="transparent" data-i="' + i + '"/>';
+    }).join('');
+
+    chart.innerHTML =
+      '<defs><linearGradient id="ag" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0%" stop-color="#e3c07a" stop-opacity=".34"/>' +
+      '<stop offset="100%" stop-color="#e3c07a" stop-opacity="0"/></linearGradient></defs>' +
+      grid + labels + xlab +
+      '<path d="' + area + '" fill="url(#ag)"/>' +
+      '<path d="' + line + '" fill="none" stroke="#e3c07a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+      dots + hits;
+
+    Array.prototype.forEach.call(chart.querySelectorAll('[data-i]'), function (el) {
+      el.addEventListener('mouseenter', onTip);
+      el.addEventListener('mousemove', onTip);
+      el.addEventListener('mouseleave', offTip);
+      el.addEventListener('click', onTip);
+    });
+    function onTip(e) {
+      var i = +e.currentTarget.getAttribute('data-i');
+      tip.textContent = days[i].date + ' ' + weekday(days[i].date) + ' · ' + days[i].pv + ' 次';
+      tip.style.display = 'block';
+      var r = e.currentTarget.getBoundingClientRect();
+      tip.style.left = Math.max(8, Math.min(window.innerWidth - tip.offsetWidth - 8, r.left + r.width / 2 - tip.offsetWidth / 2)) + 'px';
+      tip.style.top = Math.max(8, r.top - tip.offsetHeight - 8) + 'px';
+    }
+    function offTip() { tip.style.display = 'none'; }
+  }
+
+  function load(days) {
+    current = days;
+    chartMsg.textContent = '正在读取…';
+    if (cache[days]) { render(cache[days]); chartMsg.textContent = ''; return; }
+    api(days).then(function (d) {
+      if (!d.ok) { chartMsg.className = 'msg err'; chartMsg.textContent = '读取失败：' + (d.error || '未知错误') + '（检查密钥是否正确）'; return; }
+      cache[days] = d;
+      render(d);
+      chartMsg.textContent = '';
+    }).catch(function () {
+      chartMsg.className = 'msg err';
+      chartMsg.textContent = '连不上统计接口，检查地址是否正确、Worker 是否已部署。';
+    });
+  }
+
+  document.getElementById('go').addEventListener('click', function () {
+    var ep = document.getElementById('endpoint').value.trim();
+    var tk = document.getElementById('token').value.trim();
+    if (!ep || !tk) { gateMsg.className = 'msg err'; gateMsg.textContent = '两项都要填。'; return; }
+    cfg = { endpoint: ep, token: tk };
+    saveCfg(cfg);
+    gateMsg.className = 'msg ok'; gateMsg.textContent = '正在验证…';
+    api(7).then(function (d) {
+      if (!d.ok) {
+        gateMsg.className = 'msg err';
+        gateMsg.textContent = '验证失败：' + (d.error || '接口未返回数据');
+        try { localStorage.removeItem(KEY); } catch (e) {}
+        cfg = null;
+        return;
+      }
+      cache[7] = d;
+      showPanel();
+      render(d);
+    }).catch(function () {
+      gateMsg.className = 'msg err';
+      gateMsg.textContent = '连不上接口，检查地址是否正确。';
+      cfg = null;
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.seg button'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('.seg button'), function (x) { x.classList.remove('is-on'); });
+      b.classList.add('is-on');
+      load(+b.getAttribute('data-days'));
+    });
+  });
+
+  document.getElementById('logout').addEventListener('click', function () {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    location.reload();
+  });
+
+  var saved = loadCfg();
+  if (saved && saved.endpoint && saved.token) {
+    cfg = saved;
+    document.getElementById('endpoint').value = saved.endpoint;
+    document.getElementById('token').value = saved.token;
+    showPanel();
+    load(7);
+  }
+})();
+</script>
+</body>
+</html>
