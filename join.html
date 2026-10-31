@@ -91,9 +91,9 @@
         <div class="split-layout">
           <div class="card reveal" style="padding:34px 36px">
             <h2 style="margin:0 0 6px;font-size:22px">报名意向表</h2>
-            <p style="margin:0 0 24px;font-size:14.5px;color:var(--ink-2)">带 <span style="color:var(--gold-400)">*</span> 为必填项。本表单为纯前端演示，提交后仅把数据写入你当前浏览器的本地存储，不会发送到任何服务器。</p>
+            <p style="margin:0 0 24px;font-size:14.5px;color:var(--ink-2)">带 <span style="color:var(--gold-400)">*</span> 为必填项。提交后内容会直接发送到社团邮箱。</p>
 
-            <form class="join-form" data-local-form data-store="nymun_join" novalidate
+            <form class="join-form" data-local-form data-store="nymun_join" data-form-title="报名意向表" novalidate
                   data-ok-title="报名意向已收到，欢迎入席！"
                   data-ok-body="我们已收到你的报名意向，会通过你预留的方式与你联系。">
               <div class="alert" role="status" tabindex="-1"></div>
@@ -144,7 +144,7 @@
               </div>
 
               <button class="btn btn--primary" type="submit" style="margin-top:8px;width:100%;justify-content:center">提交报名意向</button>
-              <p class="form-note">提示：本演示站没有后端接口，数据仅保存在你当前浏览器本地，不会上传或转交任何人。正式上线时请把表单改为问卷平台地址或自建接口。</p>
+              <p class="form-note">提交后内容会直接发送到社团邮箱，我们会在收到后与你联系。</p>
             </form>
           </div>
 
